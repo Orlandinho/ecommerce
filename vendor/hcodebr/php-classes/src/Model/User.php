@@ -9,7 +9,7 @@ use \Hcode\Mailer;
 class User extends Model {
 
 	const SESSION = "User";
-	const SECRET = "HcodePhp7_Secret";
+	const SECRETKEY = "HcodePhp7_Secret";
 
 	public static function login($login, $password)
 	{
@@ -167,9 +167,9 @@ class User extends Model {
 	 		{
 
 	 			$dataRecovery = $results2[0];
-
-	 			$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc')); // generate 16  random bytes
-	 			$code = openssl_encrypt($dataRecovery['idrecovery'], 'aes-256-cbc', User::SECRET, 0, $iv);
+	 			//openssl_random_pseudo_bytes
+	 			$iv = random_bytes(openssl_cipher_iv_length('aes-256-cbc')); // generate 16 random bytes
+	 			$code = openssl_encrypt($dataRecovery['idrecovery'], 'aes-256-cbc', User::SECRETKEY, 0, $iv);
       			$code = base64_encode($code . '::' . $iv);
 
 	 			$link = "http://hcodecommerce.com.br/admin/forgot/reset?code=$code";
@@ -190,13 +190,16 @@ class User extends Model {
 	{
 
 		list($encrypted, $iv) = explode('::', base64_decode($code));//separa os dados do array
-    	$idrecovery = openssl_decrypt($encrypted, 'aes-256-cbc', User::SECRET, 0,  $iv);
+    	$idrecovery = openssl_decrypt($encrypted, 'aes-256-cbc', User::SECRETKEY, 0,  $iv);
 
     	$sql = new Sql();
 
-    	$results = $sql->select("SELECT * FROM tb_userspasswordsrecoveries a INNER JOIN tb_users b INNER JOIN USING(iduser) tb_persons c USING(idperson) WHERE a.idrecovery = :idrecovery AND a.dtrecovery = NULL AND DATE_ADD(a.dtregister, INTERVAL 1 HOUR) >= NOW()", array(
+    	$results = $sql->select("SELECT * FROM tb_userspasswordsrecoveries a INNER JOIN tb_users b USING(iduser) INNER JOIN tb_persons c USING(idperson) WHERE a.idrecovery = :idrecovery AND a.dtrecovery IS NULL AND DATE_ADD(a.dtregister, INTERVAL 1 HOUR) >= NOW()", array(
     		":idrecovery"=>$idrecovery
     	));
+
+    	//var_dump($results);
+    	//die;
 
     	if(count($results) === 0)
     	{
