@@ -103,8 +103,10 @@ class User extends Model {
 
 				header("Location: /login");
 			}
-		}
+
 			exit;
+		}
+			
 
 	}
 
@@ -299,6 +301,28 @@ class User extends Model {
 		$_SESSION[User::ERROR] = NULL;
 	}
 
+	public static function setErrorRegister($msg)
+	{
+
+		$_SESSION[User::ERROR_REGISTER] = $msg;
+	}
+
+	public static function getErrorRegister()
+	{
+
+		$msg = (isset($_SESSION[User::ERROR_REGISTER]) && $_SESSION[User::ERROR_REGISTER]) ? $_SESSION[User::ERROR_REGISTER] : "";
+
+		User::clearError();
+
+		return $msg;
+	}
+
+	public static function clearErrorRegister()
+	{
+
+		$_SESSION[User::ERROR_REGISTER] = NULL;
+	}
+
 	public static function checkLoginExists($login)
 	{
 
@@ -308,7 +332,7 @@ class User extends Model {
 			':deslogin'=>$login
 		]);
 
-		return (count($results) > 0)
+		return (count($results) > 0);
 	}
 
 	public static function getPasswordHash($password)
@@ -316,7 +340,7 @@ class User extends Model {
 
 		return password_hash($password, PASSWORD_DEFAULT, [
 			'cost'=>12
-		])
+		]);
 	}
 }
 
